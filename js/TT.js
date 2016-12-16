@@ -21,6 +21,14 @@ String.prototype.format = function(args) {
     }
     return result;
 }
+showMsg = function(data){
+			$.gritter.add({
+				title: "提示",
+				text: data,
+				sticky: false,
+				time: '2000'
+			});
+		}
 var TT = {
 	init : function(){
 		//载入模板文件
@@ -42,7 +50,41 @@ var TT = {
 		$(".pull-right").load("/include/pull-right.html");
 		$(".footer").load("/include/footer.html");
 	},
-	table : function(thName,param,style,apiUrl){
-		$(".dataContent").append("yeah");
+	table : function(title,thName,param,style,apiUrl){
+		var data = '<div class="portlet box green"><div class="portlet-title"><div class="caption"><i class="icon-cogs"></i>'+title+'</div><div class="tools"><a href="javascript:;" class="collapse"></a><a href="#portlet-config" data-toggle="modal" class="config"></a><a href="javascript:;" class="reload"></a><a href="javascript:;" class="remove"></a></div></div><div class="portlet-body"><table class="table table-hover"><thead><tr>'
+
+		//添加table头
+		for(i=0;i<thName.length;i++){
+			data +="<th>"+thName[i]+"</th>";
+		}
+
+		//填充table数据
+		$.ajax({
+			type:"GET",
+			url:apiUrl+"/getAll",
+			success : function(result){
+				result = jQuery.parseJSON(result);
+				adata = result['data'];
+				if(result['code'] == "1"){
+					showMsg("获取数据成功");
+					str = ""
+					model = "";
+					for(i=0;i<param.length;i++){
+						model += "<td>{"+param[i]+"}</td>"
+					}
+					for(i in adata){
+						str += "<tr>";
+						str += model.format(adata[i]);
+						str += "</tr>"
+					}
+					data+=str;
+					data +="</table></div></div>"
+					$(".dataContent").append(data);
+				}
+				else{
+					showMsg("网络出错");
+				}
+			}
+		})
 	}
 }
